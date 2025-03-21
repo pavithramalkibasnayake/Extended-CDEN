@@ -3,7 +3,7 @@
 Introduction
 The developed R code implements an Extended Conditional Density Estimation Network Creation and Evaluation model designed for forecasting distribution parameters, with a generalized network architecture capable of accommodating any number of hidden layers, hidden neurons, and activation functions.
 
-ecadence.initialize
+### ecadence.initialize
 This function initializes weights for the extended conditional density estimation neural network. 
 
 ecadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
