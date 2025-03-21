@@ -1,4 +1,4 @@
-# Extended Conditional Density Estimation Network Creation and Evaluation"
+## Extended Conditional Density Estimation Network Creation and Evaluation
 
 Introduction
 The developed R code implements an Extended Conditional Density Estimation Network Creation and Evaluation model designed for forecasting distribution parameters, with a generalized network architecture capable of accommodating any number of hidden layers, hidden neurons, and activation functions.
@@ -59,7 +59,7 @@ The function returns a concatenated vector of initialized weights.
 
 ### ecadence.reshape
 This function reshapes a flattened weight vector into structured weight matrices for the extended conditional density estimation neural network. This function ensures proper connectivity between layers.
-
+```
 ecadence.reshape <- function(x, weights, hidden.neurons, distribution) {
   w <- list()  # Initialize a list to store reshaped weights
   start_idx <- 1  # Start index for slicing the weights vector
@@ -87,7 +87,7 @@ ecadence.reshape <- function(x, weights, hidden.neurons, distribution) {
   #Return the list of reshaped weight matrices
   return(w)
 }
-
+```
 #### Explanation
 
 1. Function Arguments
@@ -111,7 +111,7 @@ ecadence.reshape <- function(x, weights, hidden.neurons, distribution) {
 
 ### ecadence.evaluate
 This function is responsible for evaluating the neural network model by performing a forward pass through its layers. It takes the input data, applies weight transformations, passes activations through hidden layers using specified activation functions, and finally transforms the output using distribution-based functions.
-
+```
 ecadence.evaluate <- function(x, weights, hidden.fcn, distribution) {
   #Handling fixed output parameters (if any)
   if (!is.null(distribution$parameters.fixed)) {
@@ -145,7 +145,7 @@ ecadence.evaluate <- function(x, weights, hidden.fcn, distribution) {
   #Return the final output matrix
   return(output)
 }
-
+```
 #### Explanation
 
 1. Handling Fixed Output Parameters
@@ -173,7 +173,7 @@ ecadence.evaluate <- function(x, weights, hidden.fcn, distribution) {
 
 ### ecadence.cost
 This function computes the cost (negative log-likelihood) for the extended conditional density estimation neural network based on the distribution. It incorporates regularization to prevent overfitting.
-
+```
 ecadence.cost <- function(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid) {
   
   #Initialize a vector for valid weights
@@ -233,7 +233,7 @@ ecadence.cost <- function(weights, x, y, hidden.neurons, hidden.fcn, distributio
   
   return(NLL)
 }
-
+```
 Explanation
 1. Reshaping Weights:
    - The function reshapes the input weight vector into matrices corresponding to the neural network's structure using `ecadence.reshape`.
@@ -256,7 +256,7 @@ Explanation
 ### ecadence.fit
 
 This function is designed to fit the extended conditional density estimation neural network based on a distribution. The function optimizes the weights of the neural network using various optimization methods, including Nelder-Mead, particle swarm optimization (PSO), and resilient backpropagation (Rprop). The goal is to minimize the negative log-likelihood (NLL) while optionally applying regularization.
-
+```
 ecadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, hidden.fcn = hidden.fcn, 
                               distribution = NULL, sd.norm = 0.1, init.range = c(-0.5, 0.5),
                               method = c("optim", "psoptim", "Rprop"), n.trials = 1,
@@ -344,7 +344,8 @@ ecadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, 
   attr(w, "AIC") <- AIC
   
   return(list(fit = w))
-
+}
+```
 #### Explanation
 
 1. Input Handling: Ensures `x` and `y` are matrices, scales `x`, and sets default values if `distribution` is not provided.
@@ -365,7 +366,7 @@ The function ultimately returns the best-fitted network model with optimized wei
 ### ecadence.predict
 
 This function is used for making predictions using a trained conditional density estimation neural network. It takes a matrix of input values (`x`), a fitted model (`fit`), and model parameters such as `hidden.neurons` and `hidden.fcn`. The function processes the input data, applies the trained model parameters, and returns predictions based on the specified probability distribution.
-
+```
 ecadence.predict <- function(x, fit, hidden.neurons, hidden.fcn) {
   if (!is.matrix(x)) stop("\"x\" must be a matrix")
   if ("W1" %in% names(fit)) fit <- list(fit = fit) # Standardize the input format
@@ -407,7 +408,7 @@ ecadence.predict <- function(x, fit, hidden.neurons, hidden.fcn) {
   
   return(pred)
 }
-
+```
 #### Explanation
 
 Input Parameters
@@ -450,14 +451,14 @@ Step-by-Step Execution
  ### Defining the Density Function and Activation Functions
   
   For instance, in this framework, we define the density function for the log-normal distribution as follows:
-  
+```  
 lnorm.distribution <- list(
   density.fcn = dlnorm,  # Log-normal density function
   parameters = c("meanlog", "sdlog"),  # Parameters of the log-normal distribution
   output.fcns = c(identity, exp)  # Output transformations for mean and standard deviation
 )
 lnorm.distribution
-
+```
 This setup allows the model to estimate log-normal parameters based on the given input data.
 
 #### Activation Functions
@@ -465,16 +466,18 @@ This setup allows the model to estimate log-normal parameters based on the given
 Similarly, activation functions for different hidden layer configurations can be defined as follows:
   
 Three Hidden Layers:
+```
 hidden.fcn3 <- list(
   function(h) { tanh(h) },  # Activation function for the first hidden layer
   function(h) { tanh(h) },  # Activation function for the second hidden layer
   function(h) { tanh(h) }   # Activation function for the third hidden layer
 )
-
+```
 Two Hidden Layers:
+```
 hidden.fcn2 <- list(
   function(h) { tanh(h) },  # Activation function for the first hidden layer
   function(h) { tanh(h) }   # Activation function for the second hidden layer
 )
-
+```
 These activation functions introduce non-linearity into the network, allowing it to capture complex relationships in the data. The hyperbolic tangent (`tanh`) function is chosen due to its properties of outputting values between -1 and 1, which helps stabilize the learning process.
