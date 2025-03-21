@@ -8,7 +8,7 @@ This function initializes weights for the extended conditional density estimatio
 
 ecadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
   
-  # Determine the number of parameters in the output layer
+  ## Determine the number of parameters in the output layer
   n.parms <- length(distribution$parameters)  # For log-normal: mean and variance
   
   # Initialize an empty list to store weight matrices
