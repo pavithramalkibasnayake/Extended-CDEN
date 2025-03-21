@@ -57,14 +57,14 @@ Last hidden layer → output layer: (last neurons + 1) × output parameters
 3. Output
 The function returns a concatenated vector of initialized weights.
 
-ecadence.reshape
+### ecadence.reshape
 This function reshapes a flattened weight vector into structured weight matrices for the extended conditional density estimation neural network. This function ensures proper connectivity between layers.
 
 ecadence.reshape <- function(x, weights, hidden.neurons, distribution) {
   w <- list()  # Initialize a list to store reshaped weights
   start_idx <- 1  # Start index for slicing the weights vector
   
-  # Reshape weights for the hidden layers
+  #Reshape weights for the hidden layers
   for (i in seq_along(hidden.neurons)) {
     n_input <- ifelse(i == 1, ncol(x) + 1, hidden.neurons[i - 1] + 1)  # Input size depends on layer
     n_output <- hidden.neurons[i]  # Output size is the number of neurons in the current hidden layer
@@ -73,7 +73,7 @@ ecadence.reshape <- function(x, weights, hidden.neurons, distribution) {
     start_idx <- end_idx + 1  # Update the start index for the next layer
   }
   
-  # Reshape weights for the output layer
+  #Reshape weights for the output layer
   if (length(hidden.neurons) > 0) {  # Check if there are hidden layers
     n_input <- hidden.neurons[length(hidden.neurons)] + 1  # Input size for output layer
   } else {  # If no hidden layers, input is from input layer directly to output
@@ -84,11 +84,11 @@ ecadence.reshape <- function(x, weights, hidden.neurons, distribution) {
   end_idx <- start_idx + (n_input * n_output) - 1  # Calculate the end index for output layer weights
   w[[length(hidden.neurons) + 1]] <- matrix(weights[start_idx:end_idx], n_input, n_output)  # Reshape to output layer
   
-  # Return the list of reshaped weight matrices
+  #Return the list of reshaped weight matrices
   return(w)
 }
 
-Explanation
+#### Explanation
 
 1. Function Arguments
 - `x`: Matrix of input data.
@@ -109,45 +109,44 @@ Explanation
 3. Output
 - A list of reshaped weight matrices, where each matrix represents the weights connecting layers.
 
-ecadence.evaluate
+### ecadence.evaluate
 This function is responsible for evaluating the neural network model by performing a forward pass through its layers. It takes the input data, applies weight transformations, passes activations through hidden layers using specified activation functions, and finally transforms the output using distribution-based functions.
 
 ecadence.evaluate <- function(x, weights, hidden.fcn, distribution) {
-  # Handling fixed output parameters (if any)
+  #Handling fixed output parameters (if any)
   if (!is.null(distribution$parameters.fixed)) {
     colnames(weights[[length(weights)]]) <- distribution$parameters
     weights[[length(weights)]][1:(nrow(weights[[length(weights)]]) - 1), distribution$parameters.fixed] <- 0
   }
   
-  # Forward pass: Input layer to the first hidden layer
+  #Forward pass: Input layer to the first hidden layer
   x <- cbind(x, 1)  # Add bias term to input layer
   current_activation <- x  # Initialize current activation
   
-  # Loop through all hidden layers
+  #Loop through all hidden layers
   for (i in seq_along(weights[-length(weights)])) {
     h <- current_activation %*% weights[[i]]  # Calculate activations
     y <- hidden.fcn[[i]](h)  # Apply activation function
     current_activation <- cbind(y, 1)  # Add bias term for the next layer
   }
   
-  # Forward pass to the output layer
+  #Forward pass to the output layer
   output <- current_activation %*% weights[[length(weights)]]
   
-  # Apply output functions to the raw output values
+  #Apply output functions to the raw output values
   output <- mapply(do.call, distribution$output.fcns, lapply(data.frame(output), list))
   
-  # Ensure the output is in matrix form
+  #Ensure the output is in matrix form
   if (!is.matrix(output)) output <- matrix(output, nrow = 1)
   
-  # Assign column names to match the output parameters
+  #Assign column names to match the output parameters
   colnames(output) <- distribution$parameters
   
-  # Return the final output matrix
+  #Return the final output matrix
   return(output)
 }
 
-
-Explanation
+#### Explanation
 
 1. Handling Fixed Output Parameters
 - The function first checks if there are any fixed output parameters in the `distribution$parameters.fixed` attribute.
@@ -172,33 +171,33 @@ Explanation
 - Column names are assigned according to the parameters defined in `distribution$parameters`.
 - Finally, the processed output matrix is returned.
 
-ecadence.cost
+### ecadence.cost
 This function computes the cost (negative log-likelihood) for the extended conditional density estimation neural network based on the distribution. It incorporates regularization to prevent overfitting.
 
 ecadence.cost <- function(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid) {
   
-  # Initialize a vector for valid weights
+  #Initialize a vector for valid weights
   weights.valid <- valid * 0
   weights.valid[valid] <- weights
   
-  # Reshape the weights into matrices
+  #Reshape the weights into matrices
   w <- ecadence.reshape(x, weights, hidden.neurons, distribution)
   
-  # Evaluate the neural network
+  #Evaluate the neural network
   cdn <- ecadence.evaluate(x, w, hidden.fcn, distribution)
   
-  # Prepare arguments for the density function
+  #Prepare arguments for the density function
   args <- as.list(data.frame(cbind(y, cdn)))
   names(args) <- NULL
   
-  # Calculate the negative log-likelihood
+  #Calculate the negative log-likelihood
   L <- do.call(distribution$density.fcn, args)
   NLL <- -sum(log(L))
   
-  # Initialize the penalty term
+  #Initialize the penalty term
   penalty <- 0
   
-  # Apply regularization if sd.norm is finite
+  #Apply regularization if sd.norm is finite
   if (sd.norm != Inf) {
     penalty_list <- list()  # Initialize a list to store the penalty for each layer
     
@@ -223,13 +222,13 @@ ecadence.cost <- function(weights, x, y, hidden.neurons, hidden.fcn, distributio
     penalty <- -mean(log(unlist(penalty_list)))
   }
   
-  # Handle NaN values in NLL
+  #Handle NaN values in NLL
   if (is.nan(NLL)) NLL <- .Machine$double.xmax
   
-  # Add penalty to the NLL
+  #Add penalty to the NLL
   NLL <- NLL + penalty
   
-  # Store penalty as an attribute
+  #Store penalty as an attribute
   attr(NLL, "penalty") <- penalty
   
   return(NLL)
@@ -254,7 +253,7 @@ Explanation
   - The penalty term is added to NLL.
 - If `NLL` becomes `NaN`, it is replaced with the maximum double-precision value to ensure numerical stability.
 
-ecadence.fit
+### ecadence.fit
 
 This function is designed to fit the extended conditional density estimation neural network based on a distribution. The function optimizes the weights of the neural network using various optimization methods, including Nelder-Mead, particle swarm optimization (PSO), and resilient backpropagation (Rprop). The goal is to minimize the negative log-likelihood (NLL) while optionally applying regularization.
 
@@ -346,7 +345,7 @@ ecadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, 
   
   return(list(fit = w))
 
-Explanation
+#### Explanation
 
 1. Input Handling: Ensures `x` and `y` are matrices, scales `x`, and sets default values if `distribution` is not provided.
 2. Gradient Approximation (`fprime`): Computes the numerical gradient for weight initialization.
@@ -363,7 +362,7 @@ Explanation
 
 The function ultimately returns the best-fitted network model with optimized weights and evaluation metrics.
 
-ecadence.predict
+### ecadence.predict
 
 This function is used for making predictions using a trained conditional density estimation neural network. It takes a matrix of input values (`x`), a fitted model (`fit`), and model parameters such as `hidden.neurons` and `hidden.fcn`. The function processes the input data, applies the trained model parameters, and returns predictions based on the specified probability distribution.
 
@@ -409,7 +408,7 @@ ecadence.predict <- function(x, fit, hidden.neurons, hidden.fcn) {
   return(pred)
 }
 
-Explanation
+#### Explanation
 
 Input Parameters
 - `x`: A matrix of input features for prediction.
@@ -448,7 +447,7 @@ Step-by-Step Execution
 - If only one model exists, the function simplifies the output to return a single prediction object.
 
 
-  Defining the Density Function and Activation Functions
+ ### Defining the Density Function and Activation Functions
   
   For instance, in this framework, we define the density function for the log-normal distribution as follows:
   
@@ -461,7 +460,7 @@ lnorm.distribution
 
 This setup allows the model to estimate log-normal parameters based on the given input data.
 
-Activation Functions
+#### Activation Functions
 
 Similarly, activation functions for different hidden layer configurations can be defined as follows:
   
