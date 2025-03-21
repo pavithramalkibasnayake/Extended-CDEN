@@ -8,21 +8,21 @@ This function initializes weights for the extended conditional density estimatio
 
 ecadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
   
-  ## Determine the number of parameters in the output layer
+  #Determine the number of parameters in the output layer
   n.parms <- length(distribution$parameters)  # For log-normal: mean and variance
   
-  # Initialize an empty list to store weight matrices
+  #Initialize an empty list to store weight matrices
   weights <- list()
   
-  # The number of hidden layers is defined by the length of hidden.neurons
+  #The number of hidden layers is defined by the length of hidden.neurons
   n.hidden.layers <- length(hidden.neurons)
   
-  # Initialize weights for the input layer -> first hidden layer
+  #Initialize weights for the input layer -> first hidden layer
   weights[[1]] <- matrix(runif((ncol(x) + 1) * hidden.neurons[1], 
                                init.range[1], init.range[2]), 
                          ncol(x) + 1, hidden.neurons[1])
   
-  # Initialize weights for hidden layers
+  #Initialize weights for hidden layers
   if (n.hidden.layers > 1) {
     for (i in 2:n.hidden.layers) {
       # Connecting previous hidden layer to the next hidden layer
@@ -32,12 +32,12 @@ ecadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
     }
   }
   
-  # Initialize weights for the output layer (last hidden layer -> output)
+  #Initialize weights for the output layer (last hidden layer -> output)
   weights[[n.hidden.layers + 1]] <- matrix(runif((hidden.neurons[n.hidden.layers] + 1) * n.parms, 
                                                  init.range[1], init.range[2]), 
                                            hidden.neurons[n.hidden.layers] + 1, n.parms)
   
-  # Return all weights as a single vector
+  #Return all weights as a single vector
   unlist(weights)
 }
 
