@@ -1,0 +1,148 @@
+---
+title: "Example-Extended Conditional Density Estimation Network (CDEN) Model"
+author: "B. R. P. M. Banayake"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Required Libraries
+```{r}
+# Load necessary libraries
+library(CaDENCE)
+library(openxlsx) # For writing results to Excel
+```
+
+## Load and Explore Data
+```{r}
+# Load the dataset
+data(FraserSediment)
+
+# Display the first 20 rows of the dataset
+head(FraserSediment, 20)
+
+# Display the structure of the dataset
+str(FraserSediment)
+```
+
+## Define Training and Testing Data
+```{r}
+# Extract training data (1970-1976)
+x_train <- FraserSediment$x.1970.1976
+y_train <- FraserSediment$y.1970.1976
+
+# Extract testing data (1977-1979)
+x_test <- FraserSediment$x.1977.1979
+y_test <- FraserSediment$y.1977.1979
+```
+
+## Define Log-Normal Distribution
+```{r}
+lnorm.distribution <- list(
+  density.fcn = dlnorm,
+  parameters = c("meanlog", "sdlog"),
+  output.fcns = c(identity, exp)
+)
+```
+
+## Define Activation Functions
+```{r}
+hidden.fcn2 <- list(
+  function(h) { tanh(h) },  # Activation function for first hidden layer
+  function(h) { tanh(h) }   # Activation function for second hidden layer
+)
+```
+
+## Train Models with Multiple Random Seeds
+```{r}
+# Initialize a list to store models
+models <- list()
+
+# Define seed values for reproducibility
+seed_values <- 123:152  # Range of seed values
+
+# Train models for different seeds
+for (i in seed_values) {
+  set.seed(i)  # Set the seed
+  
+  # Train the CDEN model - with two hidden layers of 2 and 3 hidden neurons 
+  model <- cadence.fit_lnorm(
+    x = x_train, y = y_train, iter.max = 100, hidden.neurons = c(2,3), 
+    hidden.fcn = hidden.fcn2, distribution = lnorm.distribution, 
+    sd.norm = 0.1, init.range = c(-0.1, 0.1), method = "Rprop", 
+    n.trials = 100, trace = 1, maxit.Nelder = 2000, trace.Nelder = 0,
+    swarm.size = NULL, vectorize = TRUE, delta.0 = 0.1, delta.min = 1e-06, 
+    delta.max = 50, epsilon = 1e-08, range.mult = 2, step.tol = 1e-08, 
+    f.target = -Inf, f.cost = cadence.cost_lnorm, max.exceptions = 500
+  )
+  
+  # Store the model in the list
+  models[[paste0("model_seed_", i)]] <- model
+  cat("Model with seed", i, "completed and saved.\n")
+}
+```
+
+## Extract Negative Log-Likelihood (NLL) Values
+```{r}
+# Initialize a data frame to store NLL values
+nll_results_df <- data.frame(Seed = integer(), NLL = numeric())
+
+# Retrieve NLL values for each model
+for (i in seed_values) {
+  nll_value <- attr(models[[paste0("model_seed_", i)]]$fit, "NLL")
+  nll_results_df <- rbind(nll_results_df, data.frame(Seed = i, NLL = nll_value))
+}
+
+# Save results to an Excel file
+write.xlsx(nll_results_df, file = "Model_NLL_Results.xlsx")
+```
+
+## Generate Predictions for Each Model
+```{r}
+b_values <- list()
+pred_b_values <- list()
+
+# Generate predictions using trained models
+for (seed in seed_values) {
+  b <- cadence.predict_lnorm(x_test, fit=models[[paste0("model_seed_", seed)]], 
+                             hidden.neurons=c(2,3), hidden.fcn=hidden.fcn2)
+  b_values[[paste0("b_seed_", seed)]] <- b
+  pred_b <- exp(b[,1] + (((b[,2])^2)/2))
+  pred_b_values[[paste0("pred_b_seed_", seed)]] <- pred_b
+}
+```
+
+## Compute Error Metrics
+```{r}
+# Initialize a data frame to store error metrics
+error_metrics_df <- data.frame(Seed = integer(), MAE = numeric(), MAPE = numeric(), MSE = numeric(), RMSE = numeric())
+
+# Compute error metrics for each model
+for (i in seed_values) {
+  pred_b <- pred_b_values[[paste0("pred_b_seed_", i)]]
+  mae_value <- MAE(y_test, pred_b)
+  mape_value <- MAPE(y_test, pred_b)
+  mse_value <- MSE(y_test, pred_b)
+  rmse_value <- RMSE(y_test, pred_b)
+  error_metrics_df <- rbind(error_metrics_df, data.frame(Seed = i, MAE = mae_value, MAPE = mape_value, MSE = mse_value, RMSE = rmse_value))
+}
+
+# Save error metrics to an Excel file
+write.xlsx(error_metrics_df, file = "Error_Metrics_Results.xlsx")
+```
+
+## Display Sample Predictions
+```{r}
+# Display first 20 predicted values
+head(pred_b_values$pred_b_seed_123, 20)
+head(y_test, 20)
+
+# Display last 20 predicted values
+tail(pred_b_values$pred_b_seed_123, 20)
+tail(y_test, 20)
+```
+
+## Summary
+This R Markdown file provides a step-by-step implementation of a Conditional Density Estimation Network (CDEN) model for probabilistic forecasting using log-normal distributions. The model is trained on historical sediment data, evaluated using multiple random seeds, and assessed using various error metrics.
