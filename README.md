@@ -5,7 +5,7 @@ The developed R code implements an Extended Conditional Density Estimation Netwo
 
 ### ecadence.initialize
 This function initializes weights for the extended conditional density estimation neural network. 
-
+```
 ecadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
   
   #Determine the number of parameters in the output layer
@@ -40,7 +40,7 @@ ecadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
   #Return all weights as a single vector
   unlist(weights)
 }
-
+```
 #### Explanation
 
 1. Function Arguments
