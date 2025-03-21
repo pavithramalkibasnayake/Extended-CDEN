@@ -41,7 +41,7 @@ ecadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
   unlist(weights)
 }
 
-Explanation
+#### Explanation
 
 1. Function Arguments
 x: Matrix of input data.
