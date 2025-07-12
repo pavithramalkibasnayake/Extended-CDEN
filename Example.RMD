@@ -1,5 +1,5 @@
 ---
-title: "Example-Extended Conditional Density Estimation Network (CDEN) Model"
+title: "Example-Improved Conditional Density Estimation Network (CDEN) Model"
 author: "B. R. P. M. Banayake"
 output: html_document
 ---
@@ -68,7 +68,7 @@ for (i in seed_values) {
   set.seed(i)  # Set the seed
   
   # Train the CDEN model - with two hidden layers of 2 and 3 hidden neurons 
-  model <- cadence.fit_lnorm(
+  model <- icadence.fit(
     x = x_train, y = y_train, iter.max = 100, hidden.neurons = c(2,3), 
     hidden.fcn = hidden.fcn2, distribution = lnorm.distribution, 
     sd.norm = 0.1, init.range = c(-0.1, 0.1), method = "Rprop", 
