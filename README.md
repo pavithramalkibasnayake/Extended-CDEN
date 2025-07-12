@@ -1,10 +1,10 @@
-## Extended Conditional Density Estimation Network Creation and Evaluation
+## Improved Conditional Density Estimation Network Creation and Evaluation
 
 Introduction
-The developed R code implements an Extended Conditional Density Estimation Network Creation and Evaluation model designed for forecasting distribution parameters, with a generalized network architecture capable of accommodating any number of hidden layers, hidden neurons, and activation functions.
+The developed R code implements an Improved Conditional Density Estimation Network Creation and Evaluation model designed for forecasting distribution parameters, with a generalized network architecture capable of accommodating any number of hidden layers, hidden neurons, and activation functions.
 
 ### icadence.initialize
-This function initializes weights for the extended conditional density estimation neural network. 
+This function initializes weights for the improved conditional density estimation neural network. 
 ```
 icadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
   
@@ -58,7 +58,7 @@ Last hidden layer → output layer: (last neurons + 1) × output parameters
 The function returns a concatenated vector of initialized weights.
 
 ### icadence.reshape
-This function reshapes a flattened weight vector into structured weight matrices for the extended conditional density estimation neural network. This function ensures proper connectivity between layers.
+This function reshapes a flattened weight vector into structured weight matrices for the improved conditional density estimation neural network. This function ensures proper connectivity between layers.
 ```
 icadence.reshape <- function(x, weights, hidden.neurons, distribution) {
   w <- list()  # Initialize a list to store reshaped weights
@@ -172,7 +172,7 @@ icadence.evaluate <- function(x, weights, hidden.fcn, distribution) {
 - Finally, the processed output matrix is returned.
 
 ### icadence.cost
-This function computes the cost (negative log-likelihood) for the extended conditional density estimation neural network based on the distribution. It incorporates regularization to prevent overfitting.
+This function computes the cost (negative log-likelihood) for the improved conditional density estimation neural network based on the distribution. It incorporates regularization to prevent overfitting.
 ```
 icadence.cost <- function(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid) {
   
@@ -255,7 +255,7 @@ Explanation
 
 ### icadence.fit
 
-This function is designed to fit the extended conditional density estimation neural network based on a distribution. The function optimizes the weights of the neural network using various optimization methods, including Nelder-Mead, particle swarm optimization (PSO), and resilient backpropagation (Rprop). The goal is to minimize the negative log-likelihood (NLL) while optionally applying regularization.
+This function is designed to fit the improved conditional density estimation neural network based on a distribution. The function optimizes the weights of the neural network using various optimization methods, including Nelder-Mead, particle swarm optimization (PSO), and resilient backpropagation (Rprop). The goal is to minimize the negative log-likelihood (NLL) while optionally applying regularization.
 ```
 icadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, hidden.fcn = hidden.fcn, 
                               distribution = NULL, sd.norm = 0.1, init.range = c(-0.5, 0.5),
