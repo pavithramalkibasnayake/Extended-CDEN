@@ -13,7 +13,7 @@
 
 <meta name="date" content="2025-03-05" />
 
-<title>Extended Conditional Density Estimation Network Creation and Evaluation</title>
+<title>Improved Conditional Density Estimation Network Creation and Evaluation</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,7 +350,7 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Extended Conditional Density Estimation
+<h1 class="title toc-ignore">Improved Conditional Density Estimation
 Network Creation and Evaluation</h1>
 <h4 class="author">B.R.P.M. Basnayake</h4>
 <h4 class="date">2025-03-05</h4>
@@ -360,17 +360,17 @@ Network Creation and Evaluation</h1>
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>The developed R code implements an Extended Conditional Density
+<p>The developed R code implements an Improved Conditional Density
 Estimation Network Creation and Evaluation model designed for
 forecasting distribution parameters, with a generalized network
 architecture capable of accommodating any number of hidden layers,
 hidden neurons, and activation functions.</p>
 </div>
-<div id="function-ecadence.initialize" class="section level2">
-<h2>Function: <code>ecadence.initialize</code></h2>
-<p>This function initializes weights for the extended conditional
+<div id="function-icadence.initialize" class="section level2">
+<h2>Function: <code>icadence.initialize</code></h2>
+<p>This function initializes weights for the improved conditional
 density estimation neural network.</p>
-<pre class="r"><code>ecadence.initialize &lt;- function(x, hidden.neurons, init.range, distribution) {
+<pre class="r"><code>icadence.initialize &lt;- function(x, hidden.neurons, init.range, distribution) {
   
   # Determine the number of parameters in the output layer
   n.parms &lt;- length(distribution$parameters)  # For log-normal: mean and variance
@@ -426,12 +426,12 @@ hidden layer → output layer: (last neurons + 1) × output parameters</p>
 weights.</p>
 </div>
 </div>
-<div id="function-ecadence.reshape" class="section level2">
-<h2>Function: <code>ecadence.reshape</code></h2>
+<div id="function-icadence.reshape" class="section level2">
+<h2>Function: <code>icadence.reshape</code></h2>
 <p>This function reshapes a flattened weight vector into structured
-weight matrices for the extended conditional density estimation neural
+weight matrices for the improved conditional density estimation neural
 network. This function ensures proper connectivity between layers.</p>
-<pre class="r"><code>ecadence.reshape &lt;- function(x, weights, hidden.neurons, distribution) {
+<pre class="r"><code>icadence.reshape &lt;- function(x, weights, hidden.neurons, distribution) {
   w &lt;- list()  # Initialize a list to store reshaped weights
   start_idx &lt;- 1  # Start index for slicing the weights vector
   
@@ -498,14 +498,14 @@ weights connecting layers.</li>
 </ul>
 </div>
 </div>
-<div id="function-ecadence.evaluate" class="section level2">
-<h2>Function: <code>ecadence.evaluate</code></h2>
+<div id="function-icadence.evaluate" class="section level2">
+<h2>Function: <code>icadence.evaluate</code></h2>
 <p>This function is responsible for evaluating the neural network model
 by performing a forward pass through its layers. It takes the input
 data, applies weight transformations, passes activations through hidden
 layers using specified activation functions, and finally transforms the
 output using distribution-based functions.</p>
-<pre class="r"><code>ecadence.evaluate &lt;- function(x, weights, hidden.fcn, distribution) {
+<pre class="r"><code>icadence.evaluate &lt;- function(x, weights, hidden.fcn, distribution) {
   # Handling fixed output parameters (if any)
   if (!is.null(distribution$parameters.fixed)) {
     colnames(weights[[length(weights)]]) &lt;- distribution$parameters
@@ -596,22 +596,22 @@ ensure consistency.</li>
 <li>Finally, the processed output matrix is returned.</li>
 </ul>
 </div>
-<div id="function-ecadence.cost" class="section level2">
-<h2>Function: <code>ecadence.cost</code></h2>
+<div id="function-icadence.cost" class="section level2">
+<h2>Function: <code>icadence.cost</code></h2>
 <p>This function computes the cost (negative log-likelihood) for the
-extended conditional density estimation neural network based on the
+improved conditional density estimation neural network based on the
 distribution. It incorporates regularization to prevent overfitting.</p>
-<pre class="r"><code>ecadence.cost &lt;- function(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid) {
+<pre class="r"><code>icadence.cost &lt;- function(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid) {
   
   # Initialize a vector for valid weights
   weights.valid &lt;- valid * 0
   weights.valid[valid] &lt;- weights
   
   # Reshape the weights into matrices
-  w &lt;- ecadence.reshape(x, weights, hidden.neurons, distribution)
+  w &lt;- icadence.reshape(x, weights, hidden.neurons, distribution)
   
   # Evaluate the neural network
-  cdn &lt;- ecadence.evaluate(x, w, hidden.fcn, distribution)
+  cdn &lt;- icadence.evaluate(x, w, hidden.fcn, distribution)
   
   # Prepare arguments for the density function
   args &lt;- as.list(data.frame(cbind(y, cdn)))
@@ -668,12 +668,12 @@ distribution. It incorporates regularization to prevent overfitting.</p>
 <ul>
 <li>The function reshapes the input weight vector into matrices
 corresponding to the neural network’s structure using
-<code>ecadence.reshape</code>.</li>
+<code>icadence.reshape</code>.</li>
 </ul></li>
 <li><strong>Evaluating the Neural Network:</strong></li>
 </ol>
 <ul>
-<li>The function calls <code>ecadence.evaluate</code> to obtain
+<li>The function calls <code>icadence.evaluate</code> to obtain
 predictions from the model.</li>
 </ul>
 <ol start="3" style="list-style-type: decimal">
@@ -702,22 +702,22 @@ regularize weights and prevent overfitting.</li>
 the maximum double-precision value to ensure numerical stability.</li>
 </ul>
 </div>
-<div id="function-ecadence.fit" class="section level2">
-<h2>Function: <code>ecadence.fit</code></h2>
-<p>This function is designed to fit the extended conditional density
+<div id="function-icadence.fit" class="section level2">
+<h2>Function: <code>icadence.fit</code></h2>
+<p>This function is designed to fit the improved conditional density
 estimation neural network based on a distribution. The function
 optimizes the weights of the neural network using various optimization
 methods, including Nelder-Mead, particle swarm optimization (PSO), and
 resilient backpropagation (Rprop). The goal is to minimize the negative
 log-likelihood (NLL) while optionally applying regularization.</p>
-<pre class="r"><code>ecadence.fit &lt;- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, hidden.fcn = hidden.fcn, 
+<pre class="r"><code>icadence.fit &lt;- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, hidden.fcn = hidden.fcn, 
                               distribution = NULL, sd.norm = 0.1, init.range = c(-0.5, 0.5),
                               method = c(&quot;optim&quot;, &quot;psoptim&quot;, &quot;Rprop&quot;), n.trials = 1,
                               trace = 1, maxit.Nelder = 2000, trace.Nelder = 0,
                               swarm.size = NULL, vectorize = TRUE,
                               delta.0 = 0.1, delta.min = 1e-06, delta.max = 50, epsilon = 1e-08,
                               range.mult = 2, step.tol = 1e-08, f.target = -Inf,
-                              f.cost = ecadence.cost, max.exceptions = 500) {
+                              f.cost = icadence.cost, max.exceptions = 500) {
   
   set.seed(123)  # Ensures reproducibility
   
@@ -744,7 +744,7 @@ log-likelihood (NLL) while optionally applying regularization.</p>
     n.exceptions &lt;- 0
     while (exception) {
       
-      weights &lt;- ecadence.initialize(x, hidden.neurons, init.range, distribution)
+      weights &lt;- icadence.initialize(x, hidden.neurons, init.range, distribution)
       gradient &lt;- fprime(weights, f.cost, epsilon)
       valid.cur &lt;- gradient^2 &gt; epsilon
       weights &lt;- weights[valid.cur]
@@ -781,7 +781,7 @@ log-likelihood (NLL) while optionally applying regularization.</p>
   }
   
   weights &lt;- output.cdn$par
-  NLL &lt;- ecadence.cost(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid)
+  NLL &lt;- icadence.cost(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid)
   penalty &lt;- attr(NLL, &quot;penalty&quot;)
   
   k &lt;- length(weights)
@@ -790,7 +790,7 @@ log-likelihood (NLL) while optionally applying regularization.</p>
   AIC &lt;- 2 * NLL + 2 * k
   AICc &lt;- AIC + (2 * k * (k + 1)) / (n - k - 1)
   
-  w &lt;- ecadence.reshape(x, weights, hidden.neurons, distribution)
+  w &lt;- icadence.reshape(x, weights, hidden.neurons, distribution)
   attr(w, &quot;hidden.neurons&quot;) &lt;- hidden.neurons
   attr(w, &quot;BIC&quot;) &lt;- BIC
   attr(w, &quot;AICc&quot;) &lt;- AICc
@@ -835,8 +835,8 @@ sizes.</li>
 <p>The function ultimately returns the best-fitted network model with
 optimized weights and evaluation metrics.</p>
 </div>
-<div id="function-ecadence.predict" class="section level2">
-<h2>Function: <code>ecadence.predict</code></h2>
+<div id="function-icadence.predict" class="section level2">
+<h2>Function: <code>icadence.predict</code></h2>
 <p>This function is used for making predictions using a trained
 conditional density estimation neural network. It takes a matrix of
 input values (<code>x</code>), a fitted model (<code>fit</code>), and
@@ -844,7 +844,7 @@ model parameters such as <code>hidden.neurons</code> and
 <code>hidden.fcn</code>. The function processes the input data, applies
 the trained model parameters, and returns predictions based on the
 specified probability distribution.</p>
-<pre class="r"><code>ecadence.predict &lt;- function(x, fit, hidden.neurons, hidden.fcn) {
+<pre class="r"><code>icadence.predict &lt;- function(x, fit, hidden.neurons, hidden.fcn) {
   if (!is.matrix(x)) stop(&quot;\&quot;x\&quot; must be a matrix&quot;)
   if (&quot;W1&quot; %in% names(fit)) fit &lt;- list(fit = fit) # Standardize the input format
   
@@ -865,7 +865,7 @@ specified probability distribution.</p>
     weight_list &lt;- fit[[nh]]
     
     # Reshape the weights for the given number of hidden neurons
-    reshaped_weights &lt;- ecadence.reshape(
+    reshaped_weights &lt;- icadence.reshape(
       x = x.pred,
       weights = unlist(weight_list), # Combine all weights into a vector
       hidden.neurons = hidden.neurons, # Dynamic hidden neurons from weights
@@ -873,7 +873,7 @@ specified probability distribution.</p>
     )
     
     # Perform evaluation using the reshaped weights, hidden activation functions, and distribution
-    pred[[nh]] &lt;- ecadence.evaluate(
+    pred[[nh]] &lt;- icadence.evaluate(
       x = x.pred,
       weights = reshaped_weights,
       hidden.fcn = hidden.fcn, # Dynamic activation function
@@ -937,7 +937,7 @@ stored mean (<code>x.center</code>) and standard deviation
 </ol>
 <ul>
 <li>Extracts the weight parameters from the model and reshapes them
-using <code>ecadence.reshape</code>.</li>
+using <code>icadence.reshape</code>.</li>
 <li>This ensures the correct structure is maintained for different
 hidden layer configurations.</li>
 </ul>
@@ -945,7 +945,7 @@ hidden layer configurations.</li>
 <li><strong>Prediction Calculation</strong></li>
 </ol>
 <ul>
-<li>The function calls <code>ecadence.evaluate</code> to compute
+<li>The function calls <code>icadence.evaluate</code> to compute
 predictions based on:</li>
 <li>The processed input <code>x.pred</code></li>
 <li>The reshaped model weights</li>
