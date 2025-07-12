@@ -3,10 +3,10 @@
 Introduction
 The developed R code implements an Extended Conditional Density Estimation Network Creation and Evaluation model designed for forecasting distribution parameters, with a generalized network architecture capable of accommodating any number of hidden layers, hidden neurons, and activation functions.
 
-### ecadence.initialize
+### icadence.initialize
 This function initializes weights for the extended conditional density estimation neural network. 
 ```
-ecadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
+icadence.initialize <- function(x, hidden.neurons, init.range, distribution) {
   
   #Determine the number of parameters in the output layer
   n.parms <- length(distribution$parameters)  # For log-normal: mean and variance
@@ -57,10 +57,10 @@ Last hidden layer → output layer: (last neurons + 1) × output parameters
 3. Output
 The function returns a concatenated vector of initialized weights.
 
-### ecadence.reshape
+### icadence.reshape
 This function reshapes a flattened weight vector into structured weight matrices for the extended conditional density estimation neural network. This function ensures proper connectivity between layers.
 ```
-ecadence.reshape <- function(x, weights, hidden.neurons, distribution) {
+icadence.reshape <- function(x, weights, hidden.neurons, distribution) {
   w <- list()  # Initialize a list to store reshaped weights
   start_idx <- 1  # Start index for slicing the weights vector
   
@@ -109,10 +109,10 @@ ecadence.reshape <- function(x, weights, hidden.neurons, distribution) {
 3. Output
 - A list of reshaped weight matrices, where each matrix represents the weights connecting layers.
 
-### ecadence.evaluate
+### icadence.evaluate
 This function is responsible for evaluating the neural network model by performing a forward pass through its layers. It takes the input data, applies weight transformations, passes activations through hidden layers using specified activation functions, and finally transforms the output using distribution-based functions.
 ```
-ecadence.evaluate <- function(x, weights, hidden.fcn, distribution) {
+icadence.evaluate <- function(x, weights, hidden.fcn, distribution) {
   #Handling fixed output parameters (if any)
   if (!is.null(distribution$parameters.fixed)) {
     colnames(weights[[length(weights)]]) <- distribution$parameters
@@ -171,20 +171,20 @@ ecadence.evaluate <- function(x, weights, hidden.fcn, distribution) {
 - Column names are assigned according to the parameters defined in `distribution$parameters`.
 - Finally, the processed output matrix is returned.
 
-### ecadence.cost
+### icadence.cost
 This function computes the cost (negative log-likelihood) for the extended conditional density estimation neural network based on the distribution. It incorporates regularization to prevent overfitting.
 ```
-ecadence.cost <- function(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid) {
+icadence.cost <- function(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid) {
   
   #Initialize a vector for valid weights
   weights.valid <- valid * 0
   weights.valid[valid] <- weights
   
   #Reshape the weights into matrices
-  w <- ecadence.reshape(x, weights, hidden.neurons, distribution)
+  w <- icadence.reshape(x, weights, hidden.neurons, distribution)
   
   #Evaluate the neural network
-  cdn <- ecadence.evaluate(x, w, hidden.fcn, distribution)
+  cdn <- icadence.evaluate(x, w, hidden.fcn, distribution)
   
   #Prepare arguments for the density function
   args <- as.list(data.frame(cbind(y, cdn)))
@@ -236,10 +236,10 @@ ecadence.cost <- function(weights, x, y, hidden.neurons, hidden.fcn, distributio
 ```
 Explanation
 1. Reshaping Weights:
-   - The function reshapes the input weight vector into matrices corresponding to the neural network's structure using `ecadence.reshape`.
+   - The function reshapes the input weight vector into matrices corresponding to the neural network's structure using `icadence.reshape`.
 
 2. Evaluating the Neural Network:
-  - The function calls `ecadence.evaluate` to obtain predictions from the model.
+  - The function calls `icadence.evaluate` to obtain predictions from the model.
 
 3. Computing Negative Log-Likelihood (NLL):
   - It calculates the likelihood of the observed data using the density function of the given distribution.
@@ -253,18 +253,18 @@ Explanation
   - The penalty term is added to NLL.
 - If `NLL` becomes `NaN`, it is replaced with the maximum double-precision value to ensure numerical stability.
 
-### ecadence.fit
+### icadence.fit
 
 This function is designed to fit the extended conditional density estimation neural network based on a distribution. The function optimizes the weights of the neural network using various optimization methods, including Nelder-Mead, particle swarm optimization (PSO), and resilient backpropagation (Rprop). The goal is to minimize the negative log-likelihood (NLL) while optionally applying regularization.
 ```
-ecadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, hidden.fcn = hidden.fcn, 
+icadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, hidden.fcn = hidden.fcn, 
                               distribution = NULL, sd.norm = 0.1, init.range = c(-0.5, 0.5),
                               method = c("optim", "psoptim", "Rprop"), n.trials = 1,
                               trace = 1, maxit.Nelder = 2000, trace.Nelder = 0,
                               swarm.size = NULL, vectorize = TRUE,
                               delta.0 = 0.1, delta.min = 1e-06, delta.max = 50, epsilon = 1e-08,
                               range.mult = 2, step.tol = 1e-08, f.target = -Inf,
-                              f.cost = ecadence.cost, max.exceptions = 500) {
+                              f.cost = icadence.cost, max.exceptions = 500) {
   
   set.seed(123)  # Ensures reproducibility
   
@@ -291,7 +291,7 @@ ecadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, 
     n.exceptions <- 0
     while (exception) {
       
-      weights <- ecadence.initialize(x, hidden.neurons, init.range, distribution)
+      weights <- icadence.initialize(x, hidden.neurons, init.range, distribution)
       gradient <- fprime(weights, f.cost, epsilon)
       valid.cur <- gradient^2 > epsilon
       weights <- weights[valid.cur]
@@ -328,7 +328,7 @@ ecadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, 
   }
   
   weights <- output.cdn$par
-  NLL <- ecadence.cost(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid)
+  NLL <- icadence.cost(weights, x, y, hidden.neurons, hidden.fcn, distribution, sd.norm, valid)
   penalty <- attr(NLL, "penalty")
   
   k <- length(weights)
@@ -337,7 +337,7 @@ ecadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, 
   AIC <- 2 * NLL + 2 * k
   AICc <- AIC + (2 * k * (k + 1)) / (n - k - 1)
   
-  w <- ecadence.reshape(x, weights, hidden.neurons, distribution)
+  w <- icadence.reshape(x, weights, hidden.neurons, distribution)
   attr(w, "hidden.neurons") <- hidden.neurons
   attr(w, "BIC") <- BIC
   attr(w, "AICc") <- AICc
@@ -363,11 +363,11 @@ ecadence.fit <- function(x, y, iter.max = 500, hidden.neurons = hidden.neurons, 
 
 The function ultimately returns the best-fitted network model with optimized weights and evaluation metrics.
 
-### ecadence.predict
+### icadence.predict
 
 This function is used for making predictions using a trained conditional density estimation neural network. It takes a matrix of input values (`x`), a fitted model (`fit`), and model parameters such as `hidden.neurons` and `hidden.fcn`. The function processes the input data, applies the trained model parameters, and returns predictions based on the specified probability distribution.
 ```
-ecadence.predict <- function(x, fit, hidden.neurons, hidden.fcn) {
+icadence.predict <- function(x, fit, hidden.neurons, hidden.fcn) {
   if (!is.matrix(x)) stop("\"x\" must be a matrix")
   if ("W1" %in% names(fit)) fit <- list(fit = fit) # Standardize the input format
   
@@ -388,7 +388,7 @@ ecadence.predict <- function(x, fit, hidden.neurons, hidden.fcn) {
     weight_list <- fit[[nh]]
     
     # Reshape the weights for the given number of hidden neurons
-    reshaped_weights <- ecadence.reshape(
+    reshaped_weights <- icadence.reshape(
       x = x.pred,
       weights = unlist(weight_list), # Combine all weights into a vector
       hidden.neurons = hidden.neurons, # Dynamic hidden neurons from weights
@@ -396,7 +396,7 @@ ecadence.predict <- function(x, fit, hidden.neurons, hidden.fcn) {
     )
     
     # Perform evaluation using the reshaped weights, hidden activation functions, and distribution
-    pred[[nh]] <- ecadence.evaluate(
+    pred[[nh]] <- icadence.evaluate(
       x = x.pred,
       weights = reshaped_weights,
       hidden.fcn = hidden.fcn, # Dynamic activation function
@@ -433,11 +433,11 @@ Step-by-Step Execution
 - The input matrix `x` is centered and scaled using the stored mean (`x.center`) and standard deviation (`x.scale`).
 
 4. Weight Reshaping
-- Extracts the weight parameters from the model and reshapes them using `ecadence.reshape`.
+- Extracts the weight parameters from the model and reshapes them using `icadence.reshape`.
 - This ensures the correct structure is maintained for different hidden layer configurations.
 
 5. Prediction Calculation
-- The function calls `ecadence.evaluate` to compute predictions based on:
+- The function calls `icadence.evaluate` to compute predictions based on:
 - The processed input `x.pred`
 - The reshaped model weights
 - The chosen activation function (`hidden.fcn`)
